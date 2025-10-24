@@ -1,71 +1,56 @@
-<?php
-session_start();
-include 'db.php';
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit;
-}
-?>
-
+<?php include 'db.php'; ?>
+<!DOCTYPE html>
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Reservasi Bus Online</title>
-    <link rel="stylesheet" href="bus.css">
+  <meta charset="UTF-8">
+  <title>Data Reservasi Bus</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Reservasi Bus Online</h1>
-    </header>
+<header>
+  <h1>Data Reservasi Bus</h1>
+</header>
 
-    <section class="container">
-        <h2>Daftar Bus Tersedia</h2>
-        <table>
-            <tr>
-                <th>Nama Bus</th>
-                <th>Tujuan</th>
-                <th>Harga</th>
-                <th>Jadwal</th>
-                <th>Aksi</th>
-            </tr>
-            <?php
-            $data = mysqli_query($koneksi, "SELECT * FROM bus");
-            while ($row = mysqli_fetch_assoc($data)) {
-                echo "<tr>
-                    <td>{$row['nama_bus']}</td>
-                    <td>{$row['tujuan']}</td>
-                    <td>Rp " . number_format($row['harga'], 0, ',', '.') . "</td>
-                    <td>{$row['jadwal']}</td>
-                    <td><a href='?pesan={$row['id']}' class='btn'>Pesan</a></td>
-                </tr>";
-            }
-            ?>
-        </table>
+<section class="container">
+  <a href="tambah.php" class="btn btn-tambah">+ Tambah Reservasi</a>
+  <table>
+    <tr>
+      <th>No</th>
+      <th>Nama Penumpang</th>
+      <th>No HP</th>
+      <th>Bus</th>
+      <th>Tujuan</th>
+      <th>Jumlah Tiket</th>
+      <th>Total Harga</th>
+      <th>Tanggal Pesan</th>
+      <th>Aksi</th>
+    </tr>
 
-        <?php if (isset($_GET['pesan'])): 
-            $id_bus = $_GET['pesan'];
-            $bus = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT * FROM bus WHERE id=$id_bus"));
-        ?>
-        <div class="form-container">
-            <h2>Form Reservasi - <?= $bus['nama_bus']; ?></h2>
-            <form action="proses_reservasi.php" method="POST">
-                <input type="hidden" name="id_bus" value="<?= $bus['id']; ?>">
-                <label>Nama Penumpang:</label>
-                <input type="text" name="nama_penumpang" required>
-
-                <label>No HP:</label>
-                <input type="text" name="no_hp" required>
-
-                <label>Jumlah Tiket:</label>
-                <input type="number" name="jumlah_tiket" min="1" required>
-
-                <button type="submit" class="btn">Pesan Sekarang</button>
-            </form>
-        </div>
-        <?php endif; ?>
-    </section>
-
-    <footer>
-        <p>&copy; 2025 Reservasi Bus Online</p>
-    </footer>
+    <?php
+    $no = 1;
+    $query = "SELECT r.*, b.nama_bus, b.tujuan 
+              FROM reservasi r 
+              JOIN bus b ON r.id_bus = b.id";
+    $data = mysqli_query($koneksi, $query);
+    while ($row = mysqli_fetch_assoc($data)) {
+        echo "<tr>
+          <td>$no</td>
+          <td>{$row['nama_penumpang']}</td>
+          <td>{$row['no_hp']}</td>
+          <td>{$row['nama_bus']}</td>
+          <td>{$row['tujuan']}</td>
+          <td>{$row['jumlah_tiket']}</td>
+          <td>Rp " . number_format($row['total_harga'], 0, ',', '.') . "</td>
+          <td>{$row['tanggal_pesan']}</td>
+          <td>
+            <a href='edit.php?id={$row['id']}' class='btn-edit'>Edit</a>
+            <a href='hapus.php?id={$row['id']}' class='btn-hapus' onclick='return confirm(\"Yakin ingin menghapus data ini?\")'>Hapus</a>
+          </td>
+        </tr>";
+        $no++;
+    }
+    ?>
+  </table>
+</section>
 </body>
 </html>
